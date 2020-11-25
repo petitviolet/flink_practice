@@ -4,6 +4,7 @@ import java.time.Duration
 import java.util.Properties
 
 import org.apache.flink.api.common.eventtime.WatermarkStrategy
+import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
@@ -29,14 +30,22 @@ object Job2 {
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.getConfig.setAutoWatermarkInterval(1000L)
 
-    val properties = new Properties()
-    properties.setProperty("bootstrap.servers", "localhost:32770")
-    properties.setProperty("group.id", "test")
+
+    // $ ../flink-1.11.2/bin/flink run -c net.petitviolet.Job2 \
+    //     ./target/scala-2.12/flink_practice-assembly-0.1-SNAPSHOT.jar \
+    //     --bootstrap.servers localhost:32771 \
+    //     --kafka-topic flink-topic \
+    //     --group.id test
+    val parameterTool = ParameterTool.fromArgs(args)
+    println(s"parameterTool.getProperties: ${parameterTool.getProperties}")
+    // val properties = new Properties()
+    // properties.setProperty("bootstrap.servers", sys.env.getOrElse("KAFKA_BROKERS", "localhost:1111"))
+    // properties.setProperty("group.id", "test")
 
     val kafkaStream: DataStream[ObjectNode] = env.addSource(
-      new FlinkKafkaConsumer("flink-topic",
+      new FlinkKafkaConsumer(parameterTool.getRequired("kafka-topic"),
         new JSONKeyValueDeserializationSchema(false),
-        properties,
+        parameterTool.getProperties,
       )
     ).assignTimestampsAndWatermarks(
       WatermarkStrategy.forBoundedOutOfOrderness[ObjectNode](Duration.ofSeconds(5))
