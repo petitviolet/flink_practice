@@ -1,12 +1,15 @@
 package net.petitviolet
 
+import java.io.OutputStream
 import java.time.Duration
 import java.util.Properties
 
 import org.apache.flink.api.common.eventtime.WatermarkStrategy
 import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.core.fs.Path
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.scala.function.WindowFunction
 import org.apache.flink.streaming.api.windowing.time.Time
@@ -85,6 +88,15 @@ object Job2 {
           }
         }
       }
+
+    val sink: StreamingFileSink[SensorAggregatedResult] = StreamingFileSink.forRowFormat(
+      new Path("./sink.log"),
+      (element: SensorAggregatedResult, stream: OutputStream) => {
+        stream.write(element.toString.getBytes)
+      }
+    ).build()
+
+    processed.addSink(sink)
 
     processed.print()
     // execute program
