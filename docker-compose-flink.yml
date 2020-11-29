@@ -1,0 +1,21 @@
+version: '2'
+services:
+  jobmanager: # master
+    image: "flink:1.11"
+    ports:
+      - "8081:8081"
+    command:
+      "jobmanager"
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  taskmanager: # worker
+    image: "flink:1.11"
+    command:
+      "taskmanager"
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
