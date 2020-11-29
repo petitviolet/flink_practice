@@ -2,7 +2,7 @@
 
 KAFKA_BIN_PATH="./kafka_2.12-2.4.1/bin"
 PRODUCER="$KAFKA_BIN_PATH/kafka-console-producer.sh"
-BROKER_LIST="localhost:32770"
+BROKER_LIST="localhost:9092"
 TOPIC="flink-topic"
 
 cmd() {
