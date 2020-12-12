@@ -2,7 +2,6 @@ package net.petitviolet
 
 import java.io.OutputStream
 import java.time.Duration
-import java.util.Properties
 
 import org.apache.flink.api.common.eventtime.WatermarkStrategy
 import org.apache.flink.api.java.utils.ParameterTool
@@ -92,33 +91,15 @@ object Job2 {
     val sink: StreamingFileSink[SensorAggregatedResult] = StreamingFileSink.forRowFormat(
       new Path("./sink.log"),
       (element: SensorAggregatedResult, stream: OutputStream) => {
-        stream.write(element.toString.getBytes)
+        stream.write((element.toString + "\n").getBytes)
       }
     ).build()
 
     processed.addSink(sink)
 
-    processed.print()
+    // processed.print()
     // execute program
 
     env.execute("Flink Kafka JSON to average with timewindow")
   }
-}
-
-case class SensorData(deviceId: Long, temperature: Double, humidity: Double)
-
-case class SensorAggregatedResult(deviceId: Long, count: Int, temperatures: Seq[Double], humidities: Seq[Double]) {
-  private val avgTemperature = temperatures.sum / count
-  private val avgHumidity = humidities.sum / count
-  private val map: Map[String, Any] = (
-    ("deviceId", deviceId)
-      :: ("count", count)
-      :: ("temperatures", temperatures)
-      :: ("avgTemperatures", avgTemperature)
-      :: ("humidities", humidities)
-      :: ("avgHumidity", avgHumidity)
-      :: Nil
-    ).toMap
-
-  override def toString: String = util.parsing.json.JSONObject(map).toString()
 }
