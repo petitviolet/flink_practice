@@ -1,0 +1,98 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-master
+  labels:
+    app: flink-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flink-master
+  template:
+    metadata:
+      labels:
+        app: flink-master
+    spec:
+      containers:
+      - name: master
+        image: flink:1.11
+        args:
+          - jobmanager
+        ports:
+          - containerPort: 6123
+            name: rpc
+          - containerPort: 6124
+            name: blob
+          - containerPort: 6125
+            name: query
+          - containerPort: 8081
+            name: webui
+        env:
+          - name: JOB_MANAGER_RPC_ADDRESS
+            value: flink-master
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flink-worker
+  template:
+    metadata:
+      labels:
+        app: flink-worker
+    spec:
+      containers:
+      - name: worker
+        image: flink:1.11
+        args:
+          - taskmanager
+        ports:
+          - containerPort: 6121
+            name: data
+          - containerPort: 6122
+            name: rpc
+          - containerPort: 6125
+            name: query
+        env:
+          - name: JOB_MANAGER_RPC_ADDRESS
+            value: flink-master
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flink-master
+spec:
+  type: ClusterIP
+  selector:
+    app: flink-master
+  ports:
+  - name: rpc
+    port: 6123
+  - name: blob
+    port: 6124
+  - name: query
+    port: 6125
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flink-webui
+spec:
+  type: NodePort
+  selector:
+    app: flink-master
+  ports:
+  - name: webui
+    port: 8081
+    targetPort: 8081
