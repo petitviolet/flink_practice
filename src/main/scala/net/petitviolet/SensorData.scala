@@ -26,6 +26,7 @@ object SensorData {
 }
 case class SensorData(deviceId: Long, temperature: Double, humidity: Double)
 
+
 object SensorAggregatedResult {
   val serializationSchema: SerializationSchema[SensorAggregatedResult] = ???
 }
@@ -43,7 +44,7 @@ case class SensorAggregatedResult(deviceId: Long, count: Int, temperatureList: S
       :: Nil
     ).toMap
 
-  override def toString: String = {
+  def serialize: String = {
     // serialization
     util.parsing.json.JSONObject(map).toString()
   }
