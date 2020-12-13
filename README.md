@@ -7,7 +7,7 @@ $ sbt new tillrohrmann/flink-project.g8`h
 ```
 
 Launch a Kafka cluster using docker, and docker-compose.  
-See [wurstmeister/kafka-docker][https://github.com/wurstmeister/kafka-docker] for further information.
+See [wurstmeister/kafka-docker](https://github.com/wurstmeister/kafka-docker) for further information.
 
 ```console
 $ docker-compose up -d # launch Kafka
@@ -24,17 +24,17 @@ $ tar -xzf flink-1.11.2-bin-scala_2.12.tgz
 $ ./flink-1.11.2/bin/start-cluster.sh
 ```
 
-Then, build a JAR and submit it to the local Flink.
+Then, build a JAR and submit it to the Flink cluster that is running locally.
 
 ```console
 $ sbt clean assembly
 $ ../flink-1.11.2/bin/flink run ./target/scala-2.12/flink_practice-assembly-0.1-SNAPSHOT.jar
 ```
 
-Now ready to use the streaming processing application. Send messages to the Kafka to process the messages.
+Now it's ready to use the streaming processing application. Send messages to the Kafka to process the messages.
 
 ```console
 $ ./kafka_2.12-2.4.1/bin/kafka-console-producer.sh --broker-list localhost:32768 --topic flink-topic
 ```
 
-The logs are available at 'localhost:8081'.
+The logs and stdout are available at 'localhost:8081'.
