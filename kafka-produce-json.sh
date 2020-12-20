@@ -3,7 +3,7 @@
 KAFKA_BIN_PATH="./kafka_2.12-2.4.1/bin"
 PRODUCER="$KAFKA_BIN_PATH/kafka-console-producer.sh"
 BROKER_LIST="localhost:9092"
-TOPIC="flink-topic"
+TOPIC="flink-topic-in"
 
 cmd() {
   data=$(jo deviceId="$((RANDOM % 3 + 1))" temperature="$((RANDOM % 40)).$((RANDOM % 10))" humidity="$((RANDOM % 100)).$((RANDOM % 10))")
