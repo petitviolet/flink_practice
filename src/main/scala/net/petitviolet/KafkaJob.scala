@@ -40,7 +40,7 @@ object KafkaJob {
     val parameterTool = ParameterTool.fromArgs(args)
     val properties = new Properties()
     properties.setProperty("bootstrap.servers", parameterTool.getRequired("bootstrap.servers"))
-    properties.setProperty("group.id", parameterTool.getRequired("group.id"))
+    // properties.setProperty("group.id", parameterTool.getRequired("group.id"))
 
     val kafkaStream: DataStream[ObjectNode] = env.addSource(
       new FlinkKafkaConsumer(parameterTool.getRequired("kafka-topic-in"),
@@ -78,6 +78,8 @@ object KafkaJob {
       parameterTool.getRequired("kafka-topic-out"),
       new SimpleStringSchema()
     ))
+
+    processed.print()
 
     // execute program
     env.execute("sensor data calculation from kafka into kafka")

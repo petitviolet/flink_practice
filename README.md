@@ -10,7 +10,7 @@ Launch a Kafka cluster using docker, and docker-compose.
 See [wurstmeister/kafka-docker](https://github.com/wurstmeister/kafka-docker) for further information.
 
 ```console
-$ docker-compose up -d # launch Kafka
+$ ADVERTISED_HOST_NAME=$(ip) docker-compose -f ./docker-compose-kafka.yml up -d # launch Kafka
 $ docker ps # see the port of Kafka broker
 $ # create a topic for this example
 $ ./kafka_2.12-2.4.1/bin/kafka-topics.sh --zookeeper localhost:2181 --create --topic flink-topic --partitions 1 --replication-factor 1
