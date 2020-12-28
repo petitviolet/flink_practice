@@ -9,10 +9,12 @@ object SensorData {
   def deserialize(obj: ObjectNode): Option[SensorData] = {
     Try {
       val value = obj.get("value")
+      println(s"value: ${value}")
       SensorData(
         value.get("deviceId").asLong(),
         value.get("temperature").asDouble(),
         value.get("humidity").asDouble(),
+        Some(Option(value.get("timestamp")).get.asLong())
       )
     } match {
       case Success(x) => Some(x)
@@ -24,7 +26,7 @@ object SensorData {
   }
 
 }
-case class SensorData(deviceId: Long, temperature: Double, humidity: Double)
+case class SensorData(deviceId: Long, temperature: Double, humidity: Double, timestamp: Option[Long])
 
 
 object SensorAggregatedResult {

@@ -60,6 +60,7 @@ object Job2 {
           value.get("deviceId").asLong(),
           value.get("temperature").asDouble(),
           value.get("humidity").asDouble(),
+          None,
         )
       } match {
         case Success(x) => Some(x)

@@ -6,8 +6,9 @@ BROKER_LIST="localhost:9092"
 TOPIC="flink-topic-in"
 
 cmd() {
-  data=$(jo deviceId="$((RANDOM % 3 + 1))" temperature="$((RANDOM % 40)).$((RANDOM % 10))" humidity="$((RANDOM % 100)).$((RANDOM % 10))")
-  echo $(date +"%s") '-' $data
+  local timestamp="$(date +"%s")"
+  local data="$(jo timestamp="${timestamp}" deviceId="$((RANDOM % 3 + 1))" temperature="$((RANDOM % 40)).$((RANDOM % 10))" humidity="$((RANDOM % 100)).$((RANDOM % 10))")"
+  echo ${timestamp} '-' $data
   echo $data | $PRODUCER --broker-list $BROKER_LIST --topic $TOPIC 1>/dev/null
 }
 
