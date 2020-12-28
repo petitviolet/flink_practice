@@ -3,9 +3,11 @@ package net.petitviolet
 import java.time.Duration
 import java.util.Properties
 
-import org.apache.flink.api.common.eventtime.WatermarkStrategy
+import org.apache.flink.api.common.eventtime.{ SerializableTimestampAssigner, WatermarkStrategy }
 import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.contrib.streaming.state.RocksDBStateBackend
+import org.apache.flink.runtime.state.StateBackend
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.datastream.DataStreamSink
@@ -28,8 +30,10 @@ object KafkaJob {
     // set up the execution environment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.getConfig.setAutoWatermarkInterval(1000L)
+     env.getConfig.setAutoWatermarkInterval(1000L)
 
+    val stateBackend: StateBackend = new RocksDBStateBackend("file:///flink/states")
+    env.setStateBackend(stateBackend)
 
     // $ ../flink-1.11.2/bin/flink run -c net.petitviolet.Job2 \
     //     ./target/scala-2.12/flink_practice-assembly-0.1-SNAPSHOT.jar \
@@ -47,14 +51,20 @@ object KafkaJob {
         new JSONKeyValueDeserializationSchema(false),
         properties,
       )
-    ).assignTimestampsAndWatermarks(
-      WatermarkStrategy.forBoundedOutOfOrderness[ObjectNode](Duration.ofSeconds(5))
     )
+    val timestampAssigner = new SerializableTimestampAssigner[SensorData] {
+      override def extractTimestamp(element: SensorData, recordTimestamp: Long): Long = element.timestamp getOrElse recordTimestamp
+    }
+
+    val periodicAssigner: WatermarkStrategy[SensorData] =
+      WatermarkStrategy.forMonotonousTimestamps() //Duration.ofSeconds(1L))
+        .withTimestampAssigner(timestampAssigner)
 
     val deserializedStream: DataStream[SensorData] = kafkaStream.flatMap { SensorData.deserialize(_) }
+      .assignTimestampsAndWatermarks(periodicAssigner)
 
     val processed: DataStream[SensorAggregatedResult] = deserializedStream.keyBy { _.deviceId }
-      .timeWindow(Time.seconds(20))
+      .timeWindow(Time.seconds(10))
       .apply {
         new WindowFunction[SensorData, SensorAggregatedResult, Long, TimeWindow] {
           override def apply(
