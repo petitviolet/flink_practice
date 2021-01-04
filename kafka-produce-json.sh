@@ -6,7 +6,7 @@ BROKER_LIST=${BROKER_LIST:-"localhost:9092"}
 TOPIC=${TOPIC:-"flink-topic-in"}
 
 cmd() {
-  local timestamp="$(date +"%s")"
+  local timestamp="$(date +"%s%3N")"
   local data="$(jo timestamp="${timestamp}" deviceId="$((RANDOM % 3 + 1))" temperature="$((RANDOM % 40)).$((RANDOM % 10))" humidity="$((RANDOM % 100)).$((RANDOM % 10))")"
   echo ${timestamp} '-' $data
   echo $data | $PRODUCER --broker-list $BROKER_LIST --topic $TOPIC 1>/dev/null
