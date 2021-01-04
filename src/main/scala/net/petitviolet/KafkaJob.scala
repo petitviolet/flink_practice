@@ -6,15 +6,15 @@ import java.util.Properties
 import org.apache.flink.api.common.eventtime.{ SerializableTimestampAssigner, WatermarkStrategy }
 import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.contrib.streaming.state.RocksDBStateBackend
 import org.apache.flink.runtime.state.StateBackend
-import org.apache.flink.runtime.state.memory.MemoryStateBackend
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode
-import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.datastream.DataStreamSink
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.scala.function.WindowFunction
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow
+import org.apache.flink.streaming.api.{ CheckpointingMode, TimeCharacteristic }
 import org.apache.flink.streaming.connectors.kafka.{ FlinkKafkaConsumer, FlinkKafkaProducer }
 import org.apache.flink.streaming.util.serialization.JSONKeyValueDeserializationSchema
 import org.apache.flink.util.Collector
@@ -30,7 +30,10 @@ object KafkaJob {
     // set up the execution environment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.setStateBackend(new MemoryStateBackend: StateBackend)
+
+    val stateBackend: StateBackend = new RocksDBStateBackend("file:///tmp/flink-states")
+    env.setStateBackend(stateBackend)
+    env.enableCheckpointing(10000L, CheckpointingMode.AT_LEAST_ONCE)
 
     // $ ../flink-1.11.2/bin/flink run -c net.petitviolet.KafkaJob \
     //     ./target/scala-2.12/flink_practice-assembly-0.1-SNAPSHOT.jar \
